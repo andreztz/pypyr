@@ -5,6 +5,8 @@ from collections import OrderedDict
 from unittest.mock import call, patch
 import sys
 
+import pytest
+
 from pypyr.context import Context
 import pypyr.steps.debug as debug
 from pypyr.dsl import Jsonify, PyString, SicString
@@ -163,7 +165,16 @@ def get_obj_hex(obj):
         return hex(id(obj))
 
 
-def test_complex_object():
+@pytest.fixture
+def expected_ordered_dict():
+    if (3, 7) <= sys.version_info < (3, 12):
+        ordered_dict = "OrderedDict([('a', 1), ('b', 2)])"
+    else:
+        ordered_dict = "OrderedDict({'a': 1, 'b': 2})"
+    return ordered_dict
+
+
+def test_complex_object(expected_ordered_dict):
     """Check different complex objects, like error, date, type..."""
     py_str = PyString('py_arb')
 
@@ -207,7 +218,7 @@ def test_complex_object():
         " 'lambda': <function test_complex_object.<locals>.<lambda>"
         f" at {get_obj_hex(arb_lambda)}>,\n"
         " 'list': ['arb1', 'arb2', ['arb3']],\n"
-        " 'ordered_dict': OrderedDict([('a', 1), ('b', 2)]),\n"
+        f" 'ordered_dict': {expected_ordered_dict},\n"
         " 'py': PyString('py_arb'),\n"
         " 'sic': SicString('sic_arb'),\n"
         " 'tuple': ('arb1', 'arb2'),\n"
